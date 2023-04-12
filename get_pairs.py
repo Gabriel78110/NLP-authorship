@@ -1,3 +1,5 @@
+
+
 import numpy as np
 import pandas as pd
 import json
@@ -43,6 +45,7 @@ def how_hard(author1,author2):
                 c2 = count_shared_papers(author2,author,authors,data)
                 if min(c1,c2) > 0:
                     c+=min(c1,c2)
+                    return c
     return c
 
 def get_hardest_author(author1):
@@ -54,21 +57,43 @@ def get_hardest_author(author1):
             if count_shared_papers(author1,author_,authors,data)==0:
                 if how_hard(author1,author_) > count:
                     count = how_hard(author1,author_)
-                    cur = author_
-                    print(count)
-                    print(cur)
-    return cur, count
+                    return cur, count
+                    # cur = author_
+                    # print(count)
+                    # print(cur)
+    # return cur, count
+
+def get_easy_pairs(author1):
+    author_1 = pd.read_csv(f'../Data/{author1}.csv').filter(['author', 'title', 'text'])
+    n = author_1.shape[0]
+    while True:
+        author_ = random.choice(author_l)
+        if author_ != author1:
+            author_2 = pd.read_csv(f'../Data/{author_}.csv').filter(['author', 'title', 'text'])
+            m = author_2.shape[0]
+            if (count_shared_papers(author1,author_,authors,data)==0) and (min(n/m,m/n) >=1 /2):
+                return author_
+            
 
 t1 = time.time()
 hard_pairs = []
-while len(hard_pairs) < 10:
+while len(hard_pairs) < 15:
     author1 = random.choice(author_l)
-    author2, _ = get_hardest_author(author1)
+    author2, count = get_hardest_author(author1)
     if author2 != 0:
         hard_pairs.append((author1,author2))
 
 
-with open("hard_pairs_l", "wb") as fp:
+"""for easy pairs uncomment the following"""
+
+# easy_pairs = []
+# while len(easy_pairs) < 30:
+#     author1 = random.choice(author_l)
+#     author2 = get_easy_pairs(author1)
+#     easy_pairs.append((author1,author2))
+
+
+with open("hard_pairs_2", "wb") as fp:
     pickle.dump(hard_pairs, fp)
 t2 = time.time()
 print(f"elapsed time = {t2-t1} seconds")

@@ -46,13 +46,10 @@ def HC(pvals, gamma=0.25, thresh=0.5):
     return hc, i_star
 
 def clean_text(data) :
-        #data.text = data.text.apply(remove_hexa_symbols)
-        #data.text = data.text.apply(remove_digits)
         data = data.filter(['author', 'title', 'text']).rename(columns = {'title' : 'doc_id'})
         data["len"] = data.text.apply(lambda x: len(x))
         data.text = data.text.apply(lambda x: re.sub("All rights","",x))
         data.text = data.text.apply(lambda x: re.sub("reserved","",x))
-#         data.text = data.text.apply(lambda x: re.sub("[0-9]","",x))
         data.text = data.text.apply(lambda x: re.sub("[^A-Za-z ]","",x))
         data.text = data.text.apply(lambda x: re.sub("copyright","",x))
         data.text = data.text.apply(lambda x: x.lower())
@@ -72,14 +69,8 @@ def topKFrequent(nums, k):
 
 
 def get_vocab(text, max_length=200):
-#     clf = CountVectorizer(lowercase=True)
-#     clf.fit([text])
-#     vocab = list(clf.vocabulary_.keys())
-#     print("vocab before = ",vocab)
     vocab = text.split()
     k = min(max_length, len(set(vocab)))
-#     return heapq.nlargest(k, vocab, key=vocab.get)
-#     print(vocab)
     return topKFrequent(vocab,k)
 
 """
@@ -87,9 +78,7 @@ Input:  - text is a list of strings corresponding to documents
         - vocab is the vocabulary used for the problem
 """
 def doc_to_dtm(text, vocab):
-    #tk = TweetTokenizer()
-    vectorizer = CountVectorizer(tokenizer=lambda txt: txt.split(),vocabulary=vocab) #tokenizer=tk.tokenize,
-#     X = vectorizer.fit_transform(text)
+    vectorizer = CountVectorizer(tokenizer=lambda txt: txt.split(),vocabulary=vocab)
     X = vectorizer.transform(text)
     return X.toarray()
 
@@ -105,15 +94,8 @@ def get_pvals(data_train,data_test,show_hist=False):
         x[x==author2] = 0
         return x
 
-    # author_1 = pd.read_csv(f'../Data/{author1}.csv').filter(['author', 'title', 'text'])
-    # author_2 = pd.read_csv(f'../Data/{author2}.csv').filter(['author', 'title', 'text'])
-    # n, m = author_1.shape[0], author_2.shape[0]
     if author1 != author2 and count_shared_papers(author1,author2,authors,data)==0:   
-        # data_ = pd.concat([clean_text(author_1),
-        #                                   clean_text(author_2)], ignore_index=True)
 
-        # data_train = data_.sample(frac=0.7)
-        # data_test = data_.drop(data_train.index)
         vocab = get_vocab(''.join([doc + " " for doc in list(data_train["text"])]), max_length=400)
 
 
@@ -146,7 +128,6 @@ def get_pvals(data_train,data_test,show_hist=False):
         Z = evaluate(ct_hc,c1_hc,c2_hc)
         y_preds = predict(Z)
         y_true = replace_labels(np.array(data_test.author))   # 1 = author1, 0 = author2
-        #print(f"Accuracy on test set = {accuracy(y_preds,y_true)}")
         return y_preds, y_true
     else:
         return "One author has more than twice the number of papers as the other one !!!"
@@ -160,13 +141,3 @@ def predict(z):
 
 def accuracy(y_preds,y_true):
     return np.mean(y_preds==y_true)
-
-
-# with open("hard_pairs_l","rb") as f:
-#     hard_pairs = pickle.load(f)
-
-# for pair in hard_pairs:
-#     author1, author2 = pair
-#     y_preds, y_true = get_pvals(author1,author2)
-#     print(f"Accuracy of {author1} against {author2} is {accuracy(y_preds,y_true)} \n")
-#     print(f"F1 score = {f1_score(list(y_true),list(y_preds))}")

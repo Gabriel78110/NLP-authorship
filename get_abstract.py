@@ -4,17 +4,17 @@ import json
 import pickle
 
 '''load ids of paper for each author'''
-with open('MADStat-dataset-final-version/data.json') as json_file:
+with open('../MADStat-dataset-final-version/data.json') as json_file:
     data = json.load(json_file)
 
 
 '''load list of authors'''
-with open('author_name.txt') as f:
+with open('../author_name.txt') as f:
     authors = f.readlines()
 authors = [author.strip() for author in authors]
 
 '''load papers info'''
-papers = pd.read_csv("paper.csv")
+papers = pd.read_csv("../paper.csv")
 
 def get_abstract(author_name, min_paper=30):
     author_id = authors.index(author_name)
@@ -32,18 +32,12 @@ def get_abstract(author_name, min_paper=30):
             author_df.rename(columns={"abstract":"text"}, inplace=True)
             author_df.dropna(subset=['text'], inplace=True)
             if len(author_df) >= min_paper:
-                author_df.to_csv(f"AuthAttLib/Data/{author_name}.csv")
+                author_df.to_csv(f"..//Data/{author_name}.csv")
                 print(f"{author_name} has {author_df.shape[0]} papers")
                 return True
             else:
                 return f"{author_name} must have more than {min_paper} papers!"
-            
-
-author_filtered = []
-for author in authors:
-    output = get_abstract(author)
-    if output == True:
-        author_filtered.append(author)    
+              
 
 
 def count_shared_papers(author1, author2,authors,data):
@@ -52,3 +46,11 @@ def count_shared_papers(author1, author2,authors,data):
     author_id2 = authors.index(author2)
     author_papers2 = data[str(author_id2+1)]
     return len(set(author_papers1).intersection(set(author_papers2)))
+
+
+if __name__=="__main__":
+    author_filtered = []
+    for author in authors:
+        output = get_abstract(author)
+        if output == True:
+            author_filtered.append(author)  
